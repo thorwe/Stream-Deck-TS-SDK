@@ -46,8 +46,35 @@ export class EventManager {
                 throw new IllegalArgumentError(`actionName needs to be of type string but ${typeof actionName} given.`);
             }
             EventManager.INSTANCE.registerEvent(event, <T>(eventActionName: string | false, ...params: any[]) => {
-                if (!eventActionName || actionName === '*' || actionName === eventActionName)
+                console.log('eventlister callbacks for', event)
+                if (event in ['didReceiveGlobalSettings', 'globalSettingsAvailable', 'setupReady']) {
+                    console.log('note that what is called actionName in callEvents before will here be eventActionName, not actionName (lambda in lambda).');
+                }
+                // doesn't trigger for global events ('globalSettingsAvailable', 'setupReady')
+                if (!eventActionName || actionName === '*' || actionName === eventActionName) {
+                    console.log('[UPSTREAM] triggering event:', event, 'eventActionName:', eventActionName, 'actionName:', actionName);
                     descriptor.value.apply(instance, params);
+                    return;
+                }
+
+                console.warn('eventActionName:', eventActionName, 'actionName:', actionName, "failed condition: (!eventActionName || actionName === '*' || actionName === eventActionName)");
+                
+                // this would
+                const fixVariant = 1;
+                if (fixVariant === 1) {
+                    if (!eventActionName || eventActionName === '*' || actionName === eventActionName) {
+                        console.warn('[Fix variant one] triggering event:', event, 'eventActionName:', eventActionName, 'actionName:', actionName);
+                        descriptor.value.apply(instance, params);
+                    }
+                } else {
+                    // or this would
+                    if (!eventActionName || actionName === '*' || eventActionName === '*' || actionName === eventActionName) {
+                        console.warn('[Fix variant two] triggering event:', event, 'eventActionName:', eventActionName, 'actionName:', actionName);
+                        descriptor.value.apply(instance, params);
+                    }
+                }
+                // depending on if the actionName === '*' should be kept, although I guess that's what string | false was intended for
+                // which would indicate variant one
             });
         };
 
@@ -80,6 +107,9 @@ export class EventManager {
      * @param params
      */
     public callEvents(eventName: PossibleEventsToReceive, actionName: string = '*', ...params: any[]) {
+        if (eventName in ['didReceiveGlobalSettings', 'globalSettingsAvailable', 'setupReady']) {
+            console.log('event manager: callEvents', 'eventName:', eventName, 'actionName:', actionName, 'params:', params);
+        }
         this.registeredEvents.get(eventName)?.forEach(val => val(actionName, ...params));
     }
 }

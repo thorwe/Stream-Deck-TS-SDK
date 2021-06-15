@@ -4,7 +4,8 @@ import {
     KeyUpEvent,
     SDOnActionEvent,
     StreamDeckAction,
-    WillAppearEvent
+    WillAppearEvent,
+    DidReceiveGlobalSettingsEvent
 }                          from '../../src';
 import {Counter}           from '../counter';
 import {SettingsInterface} from '../interfaces/settings.interface';
@@ -46,6 +47,21 @@ export class CounterAction extends StreamDeckAction<Counter, CounterAction> {
 
     @SDOnActionEvent('didReceiveSettings')
     private onSettings({context, payload: {settings}}: DidReceiveSettingsEvent<SettingsInterface>) {
-        this.plugin.setTitle(settings.count.toString() ?? 0, context);
+        this.plugin.setTitle(settings.count.toString() ?? '0', context);
+    }
+
+    @SDOnActionEvent('didReceiveGlobalSettings')
+    private onDidReceiveGlobalSettings(args: DidReceiveGlobalSettingsEvent) {
+        console.info('didReceiveGlobalSettings', args);
+    }
+
+    @SDOnActionEvent('globalSettingsAvailable')
+    private onGlobalSettingsAvailable(args: any) {
+        console.info('globalSettingsAvailable', args);
+    }
+
+    @SDOnActionEvent('setupReady')
+    private onSetupReady() {
+        console.info('setupReady');
     }
 }

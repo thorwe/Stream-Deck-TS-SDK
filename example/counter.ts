@@ -8,4 +8,4 @@ export class Counter extends StreamDeckPluginHandler {
     }
 }
 
-new Counter();
+new Counter().enableDebug();
